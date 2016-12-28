@@ -156,6 +156,7 @@ function session(options) {
   // generates the new session
   store.generate = function(req){
     req.sessionID = generateId(req);
+    req.sessionSignedID = 's:' + signature.sign(req.sessionID, secret[0])
     req.session = new Session(req);
     req.session.cookie = new Cookie(cookieOptions);
 
@@ -502,6 +503,15 @@ function generateSessionId(sess) {
   return uid(24);
 }
 
+function getCookieByAuthorizationBearerToken(req) {
+  var token = req.get('Authorization');
+  if (!token) {
+    return null;
+  }
+  token = token.replace(/Bearer:\s*/, '').replace(/\s*/, '')
+  return token;
+}
+
 /**
  * Get the session ID cookie from request.
  *
@@ -510,27 +520,35 @@ function generateSessionId(sess) {
  */
 
 function getcookie(req, name, secrets) {
-  var header = req.headers.cookie;
+
   var raw;
   var val;
 
-  // read from cookie header
-  if (header) {
-    var cookies = cookie.parse(header);
+  if (req.useAuthorizationBearerToken) {
 
-    raw = cookies[name];
+    raw = getCookieByAuthorizationBearerToken(req)
 
-    if (raw) {
-      if (raw.substr(0, 2) === 's:') {
-        val = unsigncookie(raw.slice(2), secrets);
+  } else {
 
-        if (val === false) {
-          debug('cookie signature invalid');
-          val = undefined;
-        }
-      } else {
-        debug('cookie unsigned')
+    var header = req.headers.cookie;
+
+    if (header) {
+      var cookies = cookie.parse(header);
+
+      raw = cookies[name];
+    }
+  }
+
+  if (raw) {
+    if (raw.substr(0, 2) === 's:') {
+      val = unsigncookie(raw.slice(2), secrets);
+
+      if (val === false) {
+        debug('cookie signature invalid');
+        val = undefined;
       }
+    } else {
+      debug('cookie unsigned')
     }
   }
 
