@@ -552,6 +552,10 @@ function getcookie(req, name, secrets) {
     }
   }
 
+  if (req.useAuthorizationBearerToken) {
+    return val;
+  }
+
   // back-compat read from cookieParser() signedCookies data
   if (!val && req.signedCookies) {
     val = req.signedCookies[name];
