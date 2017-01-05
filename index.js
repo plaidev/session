@@ -528,6 +528,10 @@ function getcookie(req, name, secrets) {
 
     raw = getCookieByAuthorizationBearerToken(req)
 
+  } else if (req.__customToken__) {
+
+    raw = req.__customToken__;
+    
   } else {
 
     var header = req.headers.cookie;
