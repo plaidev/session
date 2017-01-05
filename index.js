@@ -215,6 +215,7 @@ function session(options) {
 
     // get the session ID from the cookie
     var cookieId = req.sessionID = getcookie(req, name, secrets);
+    req.sessionSignedID = 's:' + signature.sign(req.sessionID, secret[0]);
 
     // set-cookie
     onHeaders(res, function(){
