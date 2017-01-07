@@ -156,7 +156,8 @@ function session(options) {
   // generates the new session
   store.generate = function(req){
     req.sessionID = generateId(req);
-    req.sessionSignedID = 's:' + signature.sign(req.sessionID, secret[0])
+    if(secret)
+      req.sessionSignedID = 's:' + signature.sign(req.sessionID, secret[0])
     req.session = new Session(req);
     req.session.cookie = new Cookie(cookieOptions);
 
