@@ -214,8 +214,9 @@ function session(options) {
     req.sessionStore = store;
 
     // get the session ID from the cookie
-    var cookieId = req.sessionID = getcookie(req, name, secrets);
-    req.sessionSignedID = 's:' + signature.sign(req.sessionID, secret[0]);
+    var ck_and_raw = getcookie(req, name, secrets)
+    var cookieId = req.sessionID = ck_and_raw[0];
+    req.sessionSignedID = ck_and_raw[1];
 
     // set-cookie
     onHeaders(res, function(){
@@ -558,7 +559,7 @@ function getcookie(req, name, secrets) {
   }
 
   if (req.useAuthorizationBearerToken) {
-    return val;
+    return [val, raw];
   }
 
   // back-compat read from cookieParser() signedCookies data
@@ -592,7 +593,7 @@ function getcookie(req, name, secrets) {
     }
   }
 
-  return val;
+  return [val, raw];
 }
 
 /**
